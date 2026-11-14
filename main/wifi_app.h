@@ -20,7 +20,7 @@
 typedef void (*wifi_connected_event_callback_t)(void);
 
 //Wifi app settings
-#define WIFI_AP_SSID            "IOT_TEMP_MONITOR"      //access point name
+#define WIFI_AP_SSID            "TempNode-C6"           //access point name
 #define WIFI_AP_PASSWORD        "123456789"             //password to connect
 #define WIFI_AP_CHANNEL         1                       //ap channel used
 #define WIFI_AP_SSID_HIDDEN     0                       //0 - hidden, 1 - visible
