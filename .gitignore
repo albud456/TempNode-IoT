@@ -58,5 +58,6 @@ Thumbs.db
 *.lst
 *.dmp
 *.out
-components/
 managed_components/
+main/certs/*
+!main/certs/README.md
