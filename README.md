@@ -153,7 +153,32 @@ To check that data is arriving, subscribe to the topic in the console's **MQTT t
 - **Legacy AWS IoT SDK.** The project uses the 3.x API of the AWS IoT Device SDK (`release/v3.1.x` of esp-aws-iot). Upstream no longer maintains 3.x. A migration to the current LTS (coreMQTT) API is planned. See AWS's [MQTT migration guide](https://aws.github.io/aws-iot-device-sdk-embedded-C/latest/docs/doxygen/output/html/mqtt_migration.html).
 - **TODO: other known issues**
 
-## Security
 
-- Never commit `main/certs/` contents. The `.gitignore` excludes them.
-- If a private key is ever exposed or lost, deactivate that certificate in
+## Security Architecture & Threat Mitigation
+
+When designing an embedded IoT device that operates dual Wi-Fi modes—acting as both a local Access Point (AP) for provisioning and a Station (STA) for cloud telemetry—the attack surface expands beyond standard cloud-only architectures. This section outlines how the security posture of this project evolved, the risks discovered during review, and the hardening strategies implemented.
+
+### How We Got Here: The Threat Evolution
+
+1. **The Cloud-Only Baseline:** Initially, the device was designed to connect directly to AWS IoT Core using mutual authentication (mTLS). While secure for production cloud transport, it required complex certificate provisioning and ongoing management.
+2. **The Public Broker:** To keep the project lightweight, accessible, and easy to demonstrate via a live web dashboard without cloud backend overhead, the goal is to integrate a public MQTT test broker (such as HiveMQ). 
+3. **The Local Provisioning Exposure:** To make the device configurable without hardcoding credentials, it spins up an AP and hosts a local web server for Wi-Fi setup and Over-The-Air (OTA) updates. 
+
+4. **Identified Vulnerabilities:** 
+   * **Public Broker Anonymity:** Public brokers feature zero authentication and open topic namespaces, meaning anyone can sniff unencrypted traffic or inject malicious payloads.
+   * **Unencrypted AP Probing:** Leaving the configuration AP open (unsecured) allows anyone within radio range to sniff or join the network.
+   * **LAN & AP Lateral Movement:** Once connected to the local IP or provisioning AP, unauthenticated endpoints could theoretically allow arbitrary firmware flashes or credential modification.
+
+---
+
+### Proposed Steps & Mitigations Taken
+
+To balance viewable data sharing using a public broker while maintaining robust embedded security, the following defensive engineering practices are propsed to be integrated into the architecture:
+
+| Threat Vector | Mitigation Strategy | Implementation Details |
+|---|---|---|
+| **Public Broker Injection / Malicious Control** | One-Way Telemetry Only (No Subscriptions) | The C firmware is strictly configured to **publish** sensor telemetry and never subscribe to or execute incoming messages from the broker, ensuring external actors cannot command the device. |
+| **Data Interception / Sniffing** | Zero Sensitive Data & High-Entropy Topics | Payloads are scrubbed of all personal identifiers or local network info (transmitting only synthetic telemetry), and communicated over obscure, high-entropy topic namespaces to prevent casual sniffing. |
+| **Plaintext Sniffing (Provisioning)** | WPA2/WPA3 AP Encryption | The device's configuration Access Point requires a secure pre-shared key, preventing drive-by packet sniffing of entered Wi-Fi credentials during initial setup. |
+| **LAN Lateral Movement** | Administrative Authorization | Local web server endpoints handling sensitive settings and OTA updates require session validation or device-specific authentication tokens rather than trusting the local network blindly. |
+| **Malicious Firmware Injection** | Cryptographic OTA Verification | Firmware binaries undergo integrity and signature validation before being written to non-volatile flash storage. |
