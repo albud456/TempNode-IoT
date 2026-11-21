@@ -33,7 +33,7 @@
 
 static const char* TAG = "DHT";
 
-int DHTgpio = 4;				// my default DHT pin = 4
+int DHTgpio = 10;				// DHT pin default
 float humidity = 0.;
 float temperature = 0.;
 
@@ -100,7 +100,7 @@ int getSignalLevel( int usTimeOut, bool state )
 ;
 ;	read DHT22 sensor
 
-copy/paste from AM2302/DHT22 Docu:
+copy/paste from AM2302/DHT22 Doc:
 
 DATA: Hum = 16 bits, Temp = 16 Bits, check-sum = 8 Bits
 
@@ -231,35 +231,6 @@ uint8_t bitInx = 7;
 		return DHT_CHECKSUM_ERROR;
 }
 
-/**
- * DHT22 Sensor task
- */
-static void DHT22_task(void *pvParameter)
-{
-	setDHTgpio(DHT_GPIO);
-//	printf("Starting DHT task\n\n");
-
-	for (;;)
-	{
-//		printf("=== Reading DHT ===\n");
-		int ret = readDHT();
-
-		errorHandler(ret);
-
-		printf("Humidity %.1f\n", getHumidity());
-		printf("Temperature %.1f\n", getTemperature());
-		//ESP_LOGI(TAG, "Tmp %.1f\n", getTemperature() );
-
-		// Wait at least 2 seconds before reading again
-		// The interval of the whole process must be more than 2 seconds
-		vTaskDelay(30000 / portTICK_PERIOD_MS);
-	}
-}
-
-void DHT22_task_start(void)
-{
-	xTaskCreatePinnedToCore(&DHT22_task, "DHT22_task", DHT22_TASK_STACK_SIZE, NULL, DHT22_TASK_PRIORITY, NULL, DHT22_TASK_CORE_ID);
-}
 
 
 
