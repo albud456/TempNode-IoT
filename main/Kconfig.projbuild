@@ -1,5 +1,5 @@
 
-menu "App MQTT"
+menu "MQTT Configuration"
 
     config APP_MQTT_BROKER_URI
         string "Broker URI"
@@ -27,7 +27,7 @@ menu "App MQTT"
 
     config APP_MQTT_PUBLISH_INTERVAL_S
         int "Publish interval (seconds)"
-        range 1 3600
+        range 2 3600
         default 10
 
     config APP_MQTT_QOS
@@ -38,5 +38,7 @@ menu "App MQTT"
     config APP_MQTT_RETAIN
         bool "Publish with retain flag"
         default y
+
+    
 
 endmenu
