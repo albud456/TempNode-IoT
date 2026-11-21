@@ -38,10 +38,10 @@ static int g_retry_number;
 
 //wifi app event group handle and status bits. Signals if we are connecting from saved creds or http server input
 static EventGroupHandle_t wifi_app_event_group;
-const int WIFI_APP_CONNECTING_USING_SAVED_CREDS_BIT     = BIT0; //TODO: use static const EventBits_t
-const int WIFI_APP_CONNECTING_FROM_HTTP_SERVER_BIT      = BIT1;
-const int WIFI_APP_USER_REQUESTED_STA_DISCONNECT_BIT    = BIT2;
-const int WIFI_APP_STA_CONNECTED_GOT_IP_BIT             = BIT3;
+static const EventBits_t WIFI_APP_CONNECTING_USING_SAVED_CREDS_BIT     = BIT0;
+static const EventBits_t WIFI_APP_CONNECTING_FROM_HTTP_SERVER_BIT      = BIT1;
+static const EventBits_t WIFI_APP_USER_REQUESTED_STA_DISCONNECT_BIT    = BIT2;
+static const EventBits_t WIFI_APP_STA_CONNECTED_GOT_IP_BIT             = BIT3;
 
 //queue handle used to control main flow of events
 static QueueHandle_t wifi_app_queue_handle;
