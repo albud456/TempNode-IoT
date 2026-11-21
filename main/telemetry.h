@@ -17,5 +17,10 @@
  */
 void mqtt_client_start(void);
 
+/**
+ * @brief Called when station is connected and IP obtained
+ * 
+ */
+void mqtt_client_init_and_start(void);
 
 #endif /*MQTT_CLIENT_H_*/

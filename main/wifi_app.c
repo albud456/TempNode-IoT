@@ -22,6 +22,7 @@
 #include "wifi_app.h"
 #include "http_server.h"
 #include "app_nvs.h"
+#include "telemetry.h"
 
 //For serial console messages and debugging
 static const char TAG[] = "wifi_app";
@@ -30,14 +31,14 @@ static const char TAG[] = "wifi_app";
 static wifi_connected_event_callback_t wifi_connected_event_cb;
 
 //Used for returning wifi config
-wifi_config_t *wifi_config = NULL;
+wifi_config_t *wifi_config = NULL; // TODO: consider static allocation
 
 //Used to track the number of retries when a connection fails
 static int g_retry_number;
 
 //wifi app event group handle and status bits. Signals if we are connecting from saved creds or http server input
 static EventGroupHandle_t wifi_app_event_group;
-const int WIFI_APP_CONNECTING_USING_SAVED_CREDS_BIT     = BIT0;
+const int WIFI_APP_CONNECTING_USING_SAVED_CREDS_BIT     = BIT0; //TODO: use static const EventBits_t
 const int WIFI_APP_CONNECTING_FROM_HTTP_SERVER_BIT      = BIT1;
 const int WIFI_APP_USER_REQUESTED_STA_DISCONNECT_BIT    = BIT2;
 const int WIFI_APP_STA_CONNECTED_GOT_IP_BIT             = BIT3;
@@ -296,6 +297,9 @@ static void wifi_app_task(void *pvParameter)
 
                     //Indicate wifi connected via LED
                     rgb_led_wifi_connected();
+
+                    // MQTT Client can connect
+                    mqtt_client_init_and_start();
 
                     break;
 

@@ -20,9 +20,8 @@
 #include "led_interface.h"
 #include "nvs_flash.h"
 #include "wifi_app.h"
-#include "DHT22.h"
+#include "telemetry.h"
 #include "wifi_reset_button.h"
-#include "aws_iot.h"
 
 static const char *TAG = "main";
 
@@ -30,8 +29,7 @@ void wifi_application_connected_event(void)
 {
     ESP_LOGI(TAG, "Wifi application connected");
     sntp_time_sync_task_start();
-    //Start IoT Task once wifi has been secured
-    aws_iot_start();
+    //TODO: add new mqtt client
 }
 
 void app_main(void)
@@ -51,8 +49,8 @@ void app_main(void)
     wifi_app_start();
     //wifi reset button
     wifi_reset_button_config();
-    //start DHT22 task
-    DHT22_task_start();
+    //start client to post sensor messages
+    mqtt_client_start();
     //Set event callback for sntp
     wifi_app_set_callback(&wifi_application_connected_event);
 

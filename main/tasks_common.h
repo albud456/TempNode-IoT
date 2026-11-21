@@ -42,10 +42,5 @@
 #define MQTT_CLIENT_TASK_PRIORITY           6
 #define MQTT_CLIENT_TASK_CORE_ID            0 
 
-//DHT22 Temp & Humidity sensor task
-#define DHT22_TASK_STACK_SIZE               4096
-#define DHT22_TASK_PRIORITY                 5
-#define DHT22_TASK_CORE_ID                  0 
-
 
 #endif
