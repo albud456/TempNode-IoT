@@ -37,15 +37,15 @@
 #define SNTP_TIME_SYNC_TASK_PRIORITY        4
 #define SNTP_TIME_SYNC_TASK_CORE_ID         0
 
-//aws iot task
-#define AWS_IOT_TASK_STACK_SIZE             9216
-#define AWS_IOT_TASK_PRIORITY               6
-#define AWS_IOT_TASK_CORE_ID           0 //cannot use 1
+//mqtt client task
+#define MQTT_CLIENT_TASK_STACK_SIZE         9216
+#define MQTT_CLIENT_TASK_PRIORITY           6
+#define MQTT_CLIENT_TASK_CORE_ID            0 
 
 //DHT22 Temp & Humidity sensor task
 #define DHT22_TASK_STACK_SIZE               4096
 #define DHT22_TASK_PRIORITY                 5
-#define DHT22_TASK_CORE_ID                  0 //cannot use 1
+#define DHT22_TASK_CORE_ID                  0 
 
 
 #endif

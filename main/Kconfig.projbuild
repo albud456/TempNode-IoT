@@ -1,49 +1,42 @@
-menu "Example Configuration"
 
-    orsource "$IDF_PATH/examples/common_components/env_caps/$IDF_TARGET/Kconfig.env_caps"
+menu "App MQTT"
 
-    choice BLINK_LED
-        prompt "Blink LED type"
-        default BLINK_LED_GPIO
+    config APP_MQTT_BROKER_URI
+        string "Broker URI"
+        default "mqtt://broker.emqx.io:1883"
         help
-            Select the LED type. A normal level controlled LED or an addressable LED strip.
-            The default selection is based on the Espressif DevKit boards.
-            You can change the default selection according to your board.
+            Include the scheme: mqtt:// or mqtts://.
 
-        config BLINK_LED_GPIO
-            bool "GPIO"
-        config BLINK_LED_STRIP
-            bool "LED strip"
-    endchoice
+    config APP_MQTT_USERNAME
+        string "Username"
+        default ""
 
-    choice BLINK_LED_STRIP_BACKEND
-        depends on BLINK_LED_STRIP
-        prompt "LED strip backend peripheral"
-        default BLINK_LED_STRIP_BACKEND_RMT if SOC_RMT_SUPPORTED
-        default BLINK_LED_STRIP_BACKEND_SPI
+    config APP_MQTT_PASSWORD
+        string "Password"
+        default ""
+
+    config APP_MQTT_CLIENT_ID_PREFIX
+        string "Client ID prefix"
+        default "tempnode"
         help
-            Select the backend peripheral to drive the LED strip.
+            The MAC address is appended at runtime so each device is unique.
 
-        config BLINK_LED_STRIP_BACKEND_RMT
-            depends on SOC_RMT_SUPPORTED
-            bool "RMT"
-        config BLINK_LED_STRIP_BACKEND_SPI
-            bool "SPI"
-    endchoice
+    config APP_MQTT_TOPIC_PREFIX
+        string "Topic prefix"
+        default "tempnode/CHANGE-ME"
 
-    config BLINK_GPIO
-        int "Blink GPIO number"
-        range ENV_GPIO_RANGE_MIN ENV_GPIO_OUT_RANGE_MAX
-        default 8
-        help
-            GPIO number (IOxx) to blink on and off the LED.
-            Some GPIOs are used for other purposes (flash connections, etc.) and cannot be used to blink.
+    config APP_MQTT_PUBLISH_INTERVAL_S
+        int "Publish interval (seconds)"
+        range 1 3600
+        default 10
 
-    config BLINK_PERIOD
-        int "Blink period in ms"
-        range 10 3600000
-        default 1000
-        help
-            Define the blinking period in milliseconds.
+    config APP_MQTT_QOS
+        int "Publish QoS"
+        range 0 2
+        default 0
+
+    config APP_MQTT_RETAIN
+        bool "Publish with retain flag"
+        default y
 
 endmenu
