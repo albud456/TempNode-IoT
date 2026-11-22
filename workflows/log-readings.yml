@@ -1,0 +1,53 @@
+name: log-readings
+on:
+  schedule:
+    - cron: "7,37 * * * *"        # every 30 minutes, off the top of the hour
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: data-branch
+  cancel-in-progress: false
+
+jobs:
+  log:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: data
+          path: data-branch
+      - name: Install MQTT client
+        run: sudo apt-get update && sudo apt-get install -y mosquitto-clients
+      - name: Log retained readings
+        working-directory: data-branch
+        env:
+          TOPIC_TEMP: ${{ vars.MQTT_TOPIC_TEMP }}
+          TOPIC_HUM: ${{ vars.MQTT_TOPIC_HUM }}
+        run: |
+          set -uo pipefail
+
+          log_metric () {          # $1 = metric name, $2 = topic, $3 = min, $4 = max
+            payload=$(mosquitto_sub -h broker.emqx.io -p 1883 -t "$2" -C 1 -W 20 || true)
+            [ -n "$payload" ] || { echo "$1: no retained message"; return 0; }
+            dt=$(jq -er '.dt' <<<"$payload") || { echo "$1: bad payload"; return 0; }
+            v=$(jq -er '.v' <<<"$payload") || { echo "$1: bad payload"; return 0; }
+            awk -v v="$v" -v lo="$3" -v hi="$4" 'BEGIN { exit !(v >= lo && v <= hi) }' \
+              || { echo "$1: $v out of range"; return 0; }
+            if grep -q "^${dt},$1," data.csv; then echo "$1: no new reading"; return 0; fi
+            echo "${dt},$1,${v}" >> data.csv
+            echo "$1: logged $v"
+          }
+
+          log_metric temperature "$TOPIC_TEMP" -40 80
+          log_metric humidity    "$TOPIC_HUM"  0   100
+
+          if git diff --quiet; then echo "nothing new to commit"; exit 0; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data.csv
+          git commit -m "log readings"
+          git pull --rebase origin data
+          git push origin HEAD:data
