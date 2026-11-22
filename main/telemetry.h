@@ -11,6 +11,8 @@
 #ifndef MQTT_CLIENT_H_
 #define QTT_CLIENT_H_
 
+#define PAYLOAD_LENGTH  64
+
 /**
  * @brief Starts the mqtt task to transmit messages to broker
  * 

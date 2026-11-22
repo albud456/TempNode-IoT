@@ -5,6 +5,8 @@
 #include "esp_log.h"
 #include "tasks_common.h"
 #include "DHT22.h"
+#include <math.h>
+#include "sntp_time_sync.h"
 
 static const char *TAG = "mqtt_client";
 
@@ -78,8 +80,19 @@ static void mqtt_client_config(void)
 
 
 static int mqtt_publish_data(const char *subtopic, float value)
-{
+{   
+    // Check the client is connected, and a topic has been passed in
     if (s_mqtt_client == NULL || subtopic == NULL) {
+        return -1;
+    }
+    // Check the device time is synced
+    if (!sntp_time_sync_is_synced()) {
+        ESP_LOGW(TAG, "time not synced, skipping publish");
+        return -1;
+    }
+    // JSON can't represent NaN or infinity, extra catch
+    if (!isfinite(value)) {
+        ESP_LOGW(TAG, "non-finite reading, skipping publish");
         return -1;
     }
 
@@ -93,9 +106,14 @@ static int mqtt_publish_data(const char *subtopic, float value)
         ESP_LOGE(TAG, "Topic string truncated or invalid");
         return -1;
     }
+    // UTC epoch seconds
+    time_t now = time(NULL);
 
-    char payload[32];
-    int payload_len = snprintf(payload, sizeof(payload), "%.2f", value);
+    char payload[PAYLOAD_LENGTH];
+    int payload_len = snprintf(payload, sizeof(payload),
+                               "{\"dt\":%lld,\"v\":%.2f}",
+                               (long long)now, value);
+
     if (payload_len < 0 || payload_len >= (int)sizeof(payload)) {
         ESP_LOGE(TAG, "Payload format error");
         return -1;
@@ -125,6 +143,11 @@ static int mqtt_publish_telemetry(void)
     if (ret == DHT_OK) {
         float temp_c = getTemperature();
         float humidity_pct = getHumidity();
+
+        if (!isfinite(temp_c) || !isfinite(humidity_pct)) {                // needs <math.h>
+            ESP_LOGW(TAG, "not publishing a non-finite reading");
+            return -1;
+        }
         temp_rc = mqtt_publish_data("temperature", temp_c);
         hum_rc = mqtt_publish_data("humidity", humidity_pct);
     }
