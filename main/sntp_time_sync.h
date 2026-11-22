@@ -18,10 +18,17 @@
 void sntp_time_sync_task_start(void);
 
 /**
- * @brief returns local time if set 
+ * @brief returns local time if set, produce a local-time string for the web page
  * @return local time buffer
  */
 char* sntp_time_sync_get_time(void);
 
+/**
+ * @brief checks if the device time is has been synced
+ * 
+ * @return true 
+ * @return false 
+ */
+bool sntp_time_sync_is_synced(void);
 
 #endif //SNTP_TIME_SYNC_H_

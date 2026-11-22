@@ -9,7 +9,7 @@
 #include "http_server.h"
 #include "wifi_app.h"
 
-static const char TAG[] = "sntp_time_sync";
+static const char *TAG = "sntp_time_sync";
 
 //SNTP opp mode set status
 static bool sntp_op_mode_set = false;
@@ -58,10 +58,10 @@ static void sntp_time_sync_init_sntp(void)
         setenv("TZ", "CET-1CEST,M3.5.0,M10.5.0/3", 1);
         tzset();
     }
- }
+}
 
 /**
- * @brief sntp time sync task
+ * @brief task to get the sntp time
  * @param arg pvParam
  * 
  */
@@ -70,7 +70,7 @@ static void sntp_time_sync(void *pvParam)
     for(;;)
     {
         sntp_time_sync_obtain_time();
-        //edit this as needed, currently rechecks time sync every 10s.
+        // Edit as needed, currently rechecks time sync every 10s.
         vTaskDelay(10000/portTICK_PERIOD_MS);
     }
     vTaskDelete(NULL);
@@ -94,6 +94,14 @@ char* sntp_time_sync_get_time(void)
         ESP_LOGI(TAG, "Current time info: %s", time_buffer);
     }
     return time_buffer;
+}
+
+bool sntp_time_sync_is_synced(void)
+{
+    time_t now = time(NULL);
+    struct tm tm_info = {0};
+    gmtime_r(&now, &tm_info); // UTC, so the timezone cannot affect the check
+    return tm_info.tm_year >= (2026 - 1900);
 }
 
 void sntp_time_sync_task_start(void)
