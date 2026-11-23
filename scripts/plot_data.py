@@ -67,7 +67,8 @@ for ax, (metric, label, color) in zip(axes, panels):
     ax.set_ylabel(label)
     ax.grid(True, alpha=0.3)
 
-axes[0].set_title(f"Last {days} days")
+updated_utc = datetime.now(timezone.utc).strftime("%Y-%m-%d at %H:%M UTC")
+axes[0].set_title(f"Last {days} days Data — Last updated: {updated_utc} UTC")
 axes[1].xaxis.set_major_formatter(mdates.DateFormatter("%d.%m %H:%M", tz=tz))
 axes[1].set_xlabel(tz_name)
 fig.autofmt_xdate()
